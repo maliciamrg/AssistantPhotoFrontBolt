@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Slider from 'react-slick';
-import {getPhotos, updatePhoto, sendUpdatedPhotos, getSeanceTypes, updateGetPhotos} from '../api';
+import {getPhotos, updatePhoto, sendUpdatedPhotos, getSeanceTypes, updateGetPhotos, validateRepertoire} from '../api';
 import { Photo, SeanceType } from '../types';
 import { Settings, LogOut, Play, Star, Flag, Calendar, AlertCircle, Image, Filter, CheckCircle2, XCircle } from 'lucide-react';
 import "slick-carousel/slick/slick.css";
@@ -45,17 +45,16 @@ export default function Dashboard() {
   const typeId = location.state?.typeId;
 
   useEffect(() => {
-    const validateRepertoire = async () => {
+    const validateRepertoireName = async () => {
       try {
-        const response = await fetch(`/api/validate-repertoire?name=${encodeURIComponent(repertoireName)}`);
-        const data = await response.json();
-        setRepertoireStatus(data.status);
+        const result = await validateRepertoire(repertoireName);
+        setRepertoireStatus(result.status);
       } catch (error) {
         console.error('Error validating repertoire:', error);
         setRepertoireStatus('invalid');
       }
     };
-    validateRepertoire();
+    validateRepertoireName();
   }, [repertoireName]);
 
   useEffect(() => {
