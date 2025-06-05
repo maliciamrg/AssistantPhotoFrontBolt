@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Slider from 'react-slick';
 import {getPhotos, updatePhoto, sendUpdatedPhotos, getSeanceTypes, updateGetPhotos} from '../api';
 import { Photo, SeanceType } from '../types';
-import { Settings, LogOut, Play, Star, Flag, Calendar, AlertCircle, Image, Filter } from 'lucide-react';
+import { Settings, LogOut, Play, Star, Flag, Calendar, AlertCircle, Image, Filter, CheckCircle2, XCircle } from 'lucide-react';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -37,12 +37,26 @@ export default function Dashboard() {
   const [isSending, setIsSending] = useState(false);
   const [sliderKey, setSliderKey] = useState(0);
   const [sliderRef, setSliderRef] = useState<Slider | null>(null);
+  const [repertoireStatus, setRepertoireStatus] = useState<'ok' | 'invalid' | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const repertoirePath = location.state?.repertoirePath || 'Unknown Repertoire';
   const repertoireName = location.state?.repertoireName || 'Unknown Repertoire';
   const typeId = location.state?.typeId;
 
+  useEffect(() => {
+    const validateRepertoire = async () => {
+      try {
+        const response = await fetch(`/api/validate-repertoire?name=${encodeURIComponent(repertoireName)}`);
+        const data = await response.json();
+        setRepertoireStatus(data.status);
+      } catch (error) {
+        console.error('Error validating repertoire:', error);
+        setRepertoireStatus('invalid');
+      }
+    };
+    validateRepertoire();
+  }, [repertoireName]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,7 +150,6 @@ export default function Dashboard() {
 
     return true;
   });
-
 
   useEffect(() => {
     if (filteredPhotos.length === 0) {
@@ -323,7 +336,15 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex flex-col space-y-4">
-            <h2 className="text-2xl font-bold text-gray-800">{repertoireName}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-bold text-gray-800">{repertoireName}</h2>
+              {repertoireStatus === 'ok' && (
+                <CheckCircle2 className="w-6 h-6 text-green-500" />
+              )}
+              {repertoireStatus === 'invalid' && (
+                <XCircle className="w-6 h-6 text-red-500" />
+              )}
+            </div>
 
             <div className="flex items-center gap-6 bg-gray-50 p-3 rounded-lg">
               {dateRange && (
